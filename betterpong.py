@@ -245,7 +245,7 @@ class Pong:
     def add_player_input_to_events(self, player_input_event):
         self.handle_events.append(player_input_event)
 
-    def server_run(self):
+    def server_run(self, server):
         self.init()
 
         while True:
@@ -263,7 +263,7 @@ class Pong:
             pygame.display.update()
             fps.tick(60)
 
-            # server.send_gamestate()
+            server.update_gamestate_for_all_connections()
 
     def stringify_event(self, event):
         keydirection = ""

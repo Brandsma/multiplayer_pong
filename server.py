@@ -32,7 +32,7 @@ class AuthoritativeServer:
         self.bind_server((self.ip, self.port))
 
         self.game = Pong(name = "Server Pong")
-        self.game_thread = threading.Thread(target= self.game.server_run, args=())
+        self.game_thread = threading.Thread(target= self.game.server_run, args=(self))
         
         
         self.game_thread.start()
@@ -61,7 +61,7 @@ class AuthoritativeServer:
             t = threading.Thread(target=self.client_thread, args=(conn, player_id))
             t.daemon = True
             t.start()
-
+            
     def client_thread(self, connection, player_id):
         print(f"Started a thread for client {player_id}")
 
@@ -70,7 +70,6 @@ class AuthoritativeServer:
 
         while True:
             try:
-                connection.send(self.game.get_gamestate().to_json().encode("utf-8"))
 
                 data = connection.recv(4096)
                 # If nothing got sent, wait
@@ -90,6 +89,10 @@ class AuthoritativeServer:
                     f"Client thread encountered exception: {e}\n"
                 )
                 break
+
+    def update_gamestate_for_all_connections(self):
+        for connection, _, _ in self.connections:
+            connection.send(self.game.get_gamestate().to_json().encode("utf-8"))
 
 
 
