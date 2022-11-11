@@ -75,7 +75,7 @@ class AuthoritativeServer:
                 # If nothing got sent, wait
                 if not data:
                     continue
-                print(f" -- client thread {player_id}: {data=}")
+                # print(f" -- client thread {player_id}: {data=}")
                 player_event = json.loads(data)#.decode("utf-8")
                 self.game.add_player_input_to_events(player_event)
 
@@ -93,7 +93,6 @@ class AuthoritativeServer:
 
     def update_gamestate_for_all_connections(self):
         for connection, _, _ in self.connections:
-            print(connection)
             connection.send(self.game.get_gamestate().to_json().encode("utf-8"))
 
 

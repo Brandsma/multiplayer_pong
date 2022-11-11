@@ -27,8 +27,10 @@ class Client:
                 continue
 
             game_state = GameState.from_json(data.decode("utf-8"))
-            print(f"CLIENT: game state= {game_state}")
-            self.game.set_gamestate(game_state)
+
+            # print(f"CLIENT: game state= {game_state}")
+            if game_state != None:
+                self.game.set_gamestate(game_state)
 
     def keep_alive(self):
         print("keeping alive...")

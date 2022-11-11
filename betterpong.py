@@ -65,6 +65,7 @@ class GameState:
             return gameState
         except Exception as e:
             print("Exception occurred in GameState from_json")
+            return None
 
     def to_json(self):
         state = {
@@ -78,7 +79,7 @@ class GameState:
             "r_score" : self.r_score,
         }
         json_state = json.dumps(state)
-        print(json_state)
+        print(f"\n-------------------\nstate ball pos: {self.ball_pos}, vel: {self.ball_vel}, {self.paddle1_pos=}, {self.paddle2_pos=}", end='\r')
         return json_state
 
 class Pong:
@@ -277,7 +278,6 @@ class Pong:
         elif event.type == KEYUP:
             keydirection = "KEYUP"
         else: 
-            print(f"ERROR, wrong event type {event.type} to stringify")
             return None
 
         if event.key == K_UP:
@@ -289,7 +289,6 @@ class Pong:
         elif event.key == K_s:
             key = "K_s"
         else: 
-            print(f"ERROR, wrong event key {event.key} to stringify")
             return None
 
         return (keydirection, key)
