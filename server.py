@@ -58,11 +58,11 @@ class AuthoritativeServer:
             player_id = str(uuid4())
             self.connections.add((conn, addr, player_id))
 
-            t = threading.Thread(target=self.client_thread, args=(conn, player_id))
+            t = threading.Thread(target=self.client_thread, args=(conn, addr, player_id))
             t.daemon = True
             t.start()
             
-    def client_thread(self, connection, player_id):
+    def client_thread(self, connection, address, player_id):
         print(f"Started a thread for client {player_id}")
 
         # Send the player id to the client
@@ -82,6 +82,7 @@ class AuthoritativeServer:
                 
             except ConnectionResetError as e:
                 print(f"Remote host lost connection")
+                self.connections.remove((connection, address, player_id))
                 #print(e)
                 break
             except Exception as e:
@@ -92,6 +93,7 @@ class AuthoritativeServer:
 
     def update_gamestate_for_all_connections(self):
         for connection, _, _ in self.connections:
+            print(connection)
             connection.send(self.game.get_gamestate().to_json().encode("utf-8"))
 
 
