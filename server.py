@@ -32,7 +32,7 @@ class AuthoritativeServer:
         self.bind_server((self.ip, self.port))
 
         self.game = Pong(name = "Server Pong")
-        self.game_thread = threading.Thread(target= self.game.server_run, args=(self))
+        self.game_thread = threading.Thread(target= self.game.server_run, args=(self, ))
         
         
         self.game_thread.start()
