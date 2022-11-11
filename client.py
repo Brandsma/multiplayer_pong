@@ -26,10 +26,17 @@ class Client:
             if not data:
                 continue
 
-            game_state = GameState.from_json(data.decode("utf-8"))
+            json_states = data.decode("utf-8").split("||")
+            game_states = []
+            for json_state in json_states:
+                if json_state == "":
+                    continue
+                game_states.append(GameState.from_json(json_state))
 
             # print(f"CLIENT: game state= {game_state}")
-            if game_state != None:
+            for game_state in game_states:
+                if game_state == None:
+                    continue
                 self.game.set_gamestate(game_state)
 
     def keep_alive(self):
@@ -54,6 +61,7 @@ class Client:
 
 if __name__=="__main__":
     abe_local = "192.168.178.87"
+    abe_public = "84.25.27.86"
 
-    client = Client(abe_local, 25565)
+    client = Client(abe_public, 25565)
     client.keep_alive()

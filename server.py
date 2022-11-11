@@ -93,7 +93,7 @@ class AuthoritativeServer:
 
     def update_gamestate_for_all_connections(self):
         for connection, _, _ in self.connections:
-            connection.send(self.game.get_gamestate().to_json().encode("utf-8"))
+            connection.send(f"{self.game.get_gamestate().to_json()}||".encode("utf-8"))
 
 
 

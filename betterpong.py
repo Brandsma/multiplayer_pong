@@ -64,7 +64,10 @@ class GameState:
             gameState = GameState(state["ball_pos"], state["ball_vel"], state["paddle1_pos"], state["paddle2_pos"], state["paddle1_vel"], state["paddle2_vel"], state["l_score"], state["r_score"])
             return gameState
         except Exception as e:
-            print("Exception occurred in GameState from_json")
+            # print("Exception occurred in GameState from_json")
+            print("\n\n")
+            print(json_state)
+            print(e)
             return None
 
     def to_json(self):
