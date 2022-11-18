@@ -79,10 +79,10 @@ class Client:
 if __name__=="__main__":
     abe_local = "192.168.178.87"
     abe_public = "84.25.27.86"
-    ivos_ip = "87.214.136.100"
+    ivos_ip = "82.73.173.174"
     local = "localhost"
     abe_local = "192.168.178.87"
 
 
-    client = Client(abe_local, 25565)
+    client = Client(ivos_ip, 25565)
     client.keep_alive()

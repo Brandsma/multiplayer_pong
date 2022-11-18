@@ -106,11 +106,11 @@ class AuthoritativeServer:
 if __name__=="__main__":
     abes_ip = "84.25.27.86"
     laptop_abe_local_ip = "192.168.1.104"
-    ivos_ip = "87.214.136.100"
-    ivo_local = "192.168.1.124"
+    ivos_ip = "82.73.173.174"
+    ivo_local = "192.168.178.102"
     abe_local = "192.168.178.87"
     local_ip = "localhost"
     ip_uni = "145.97.151.17"
 
-    server = AuthoritativeServer(abe_local, 25565)
+    server = AuthoritativeServer(ivo_local, 25565)
     server.listen_for_connections()
