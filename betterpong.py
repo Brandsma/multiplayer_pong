@@ -237,10 +237,10 @@ class Pong:
 
         if DEBUG:
             ping = myfont2.render(f"Ping {self.ping}", 1, (255,255,0))
-            canvas.blit(ping, (270, 20))
+            canvas.blit(ping, (310, 20))
 
     def set_ping(self, ping):
-        self.ping = round(1000 * ping, 2)
+        self.ping = int(100 * ping)
 
 
     def keydown(self, event_key):
@@ -323,7 +323,7 @@ class Pong:
                     pygame.quit()
                     sys.exit()
 
-                stringified_event = self.stringify_event(event) 
+                stringified_event = self.stringify_event(event)
                 if stringified_event != None:
                     client.send_event(stringified_event)
 

@@ -77,8 +77,13 @@ class AuthoritativeServer:
                 if not data:
                     continue
                 # print(f" -- client thread {player_id}: {data=}")
-                player_event = json.loads(data)#.decode("utf-8")
-                self.game.add_player_input_to_events(player_event)
+
+                player_events = data.split(b"||")
+                for player_event in player_events:
+                    if player_event == b'':
+                        continue
+                    player_event_decoded = json.loads(player_event)#decode("utf-8")
+                    self.game.add_player_input_to_events(player_event_decoded)
 
                 
             except ConnectionResetError as e:
