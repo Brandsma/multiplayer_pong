@@ -240,7 +240,7 @@ class Pong:
             canvas.blit(ping, (310, 20))
 
     def set_ping(self, ping):
-        self.ping = int(100 * ping)
+        self.ping = int(1000 * ping)
 
 
     def keydown(self, event_key):
@@ -279,7 +279,7 @@ class Pong:
             self.handle_events = []
 
             pygame.display.update()
-            fps.tick(60)
+            fps.tick(30)
 
             server.update_gamestate_for_all_connections()
 
@@ -327,10 +327,12 @@ class Pong:
                 stringified_event = self.stringify_event(event)
                 if stringified_event != None:
                     client.send_event(stringified_event)
+
+                    # Client side prediction
                     self.handle_event(stringified_event[0], stringified_event[1])
 
             pygame.display.update()
-            fps.tick(60)
+            fps.tick(30)
 
 
 if __name__=="__main__":

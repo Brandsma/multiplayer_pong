@@ -99,7 +99,9 @@ class AuthoritativeServer:
 
     def update_gamestate_for_all_connections(self):
         for connection, _, _ in self.connections:
-            connection.send(f"{self.game.get_gamestate().to_json()}||".encode("utf-8"))
+            gamestate = self.game.get_gamestate()
+            gamestate.cur_time = time.time()
+            connection.send(f"{gamestate.to_json()}||".encode("utf-8"))
 
 if __name__=="__main__":
     abes_ip = "84.25.27.86"

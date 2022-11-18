@@ -4,6 +4,7 @@ import time
 from network_interface import Network
 from betterpong import Pong, GameState
 
+ARTIFICIAL_PING = 0 #seconds
 
 class Client:
 
@@ -22,7 +23,11 @@ class Client:
     def listen(self):
         print("Listening from client...")
         while True:
-            data = self.network.connection.recv(4096)            
+
+
+            data = self.network.connection.recv(4096)    
+            time.sleep(ARTIFICIAL_PING)
+            now = time.time()        
             if not data:
                 continue
 
@@ -44,10 +49,10 @@ class Client:
             for game_state in game_states:
                 if game_state == None:
                     continue
+
                 self.game.set_gamestate(game_state)
 
-                # Set ping
-                now = time.time()
+                # Set ping                
                 self.game.set_ping(now - game_state.cur_time)
 
     def keep_alive(self):
@@ -75,7 +80,9 @@ if __name__=="__main__":
     abe_local = "192.168.178.87"
     abe_public = "84.25.27.86"
     ivos_ip = "87.214.136.100"
+    local = "localhost"
+    abe_local = "192.168.178.87"
 
 
-    client = Client(abe_public, 25565)
+    client = Client(abe_local, 25565)
     client.keep_alive()
