@@ -118,8 +118,8 @@ class Pong:
         self.ball_vel = gamestate.ball_vel
         self.paddle1_pos = gamestate.paddle1_pos
         self.paddle2_pos = gamestate.paddle2_pos
-        self.paddle1_vel = gamestate.paddle1_vel
-        self.paddle2_vel = gamestate.paddle2_vel
+        self.paddle1_vel = 0
+        self.paddle2_vel = 0
         self.l_score = gamestate.l_score
         self.r_score = gamestate.r_score
         self.cur_time = gamestate.cur_time
