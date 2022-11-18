@@ -7,6 +7,7 @@ import sys
 from pygame import *
 from easygui import *
 from dataclasses import dataclass
+import time as time_module
 
 image = "/usr/share/daylight/daylightstart/DayLightLogoSunSet.gif"
 msg = "                           Welcome to Daylight Pong \n\n\n Rules of Daylight Pong \n\n\n Player 1 \n\n Arrow up = UP \n Arrow down = DOWN\n\n Player 2 \n\n Z = UP \n S = Down"
@@ -57,13 +58,14 @@ class GameState:
     paddle2_vel: float
     l_score: int
     r_score: int
+    cur_time: float
 
     @classmethod
     def from_json(cls, json_state: str):
         # print(json_state)
         try:
             state = json.loads(json_state)
-            gameState = GameState(state["ball_pos"], state["ball_vel"], state["paddle1_pos"], state["paddle2_pos"], state["paddle1_vel"], state["paddle2_vel"], state["l_score"], state["r_score"])
+            gameState = GameState(state["ball_pos"], state["ball_vel"], state["paddle1_pos"], state["paddle2_pos"], state["paddle1_vel"], state["paddle2_vel"], state["l_score"], state["r_score"], state["cur_time"])
             return gameState
         except Exception as e:
             # print("Exception occurred in GameState from_json")
@@ -82,9 +84,9 @@ class GameState:
             "paddle2_vel" : self.paddle2_vel,
             "l_score" : self.l_score,
             "r_score" : self.r_score,
+            "cur_time" : self.cur_time,
         }
         json_state = json.dumps(state)
-        print(f"\n-------------------\nstate ball pos: {self.ball_pos}, vel: {self.ball_vel}, {self.paddle1_pos=}, {self.paddle2_pos=}", end='\r')
         return json_state
 
 class Pong:
@@ -99,6 +101,7 @@ class Pong:
         self.paddle2_vel = 0
         self.l_score = 0
         self.r_score = 0
+        self.cur_time = 0.0
         self.ping = 0.0
 
         self.handle_events = []
@@ -108,7 +111,7 @@ class Pong:
 
 
     def get_gamestate(self):
-        return GameState(self.ball_pos, self.ball_vel, self.paddle1_pos, self.paddle2_pos, self.paddle1_vel, self.paddle2_vel, self.l_score, self.r_score)
+        return GameState(self.ball_pos, self.ball_vel, self.paddle1_pos, self.paddle2_pos, self.paddle1_vel, self.paddle2_vel, self.l_score, self.r_score, time_module.time())
 
     def set_gamestate(self, gamestate):
         self.ball_pos = gamestate.ball_pos
@@ -119,6 +122,7 @@ class Pong:
         self.paddle2_vel = gamestate.paddle2_vel
         self.l_score = gamestate.l_score
         self.r_score = gamestate.r_score
+        self.cur_time = gamestate.cur_time
 
 
     def ball_init(self, right):
@@ -247,9 +251,9 @@ class Pong:
         elif event_key == "K_DOWN":
             self.paddle2_vel = 8
         elif event_key == "K_z":
-            self.paddle1_vel = -8
-        elif event_key == "K_s":
             self.paddle1_vel = 8
+        elif event_key == "K_s":
+            self.paddle1_vel = -8
 
 
     def keyup(self, event_key):

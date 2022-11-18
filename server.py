@@ -72,6 +72,7 @@ class AuthoritativeServer:
             try:
 
                 data = connection.recv(4096)
+                print(f"{data=}")
                 # If nothing got sent, wait
                 if not data:
                     continue
@@ -95,14 +96,8 @@ class AuthoritativeServer:
         for connection, _, _ in self.connections:
             connection.send(f"{self.game.get_gamestate().to_json()}||".encode("utf-8"))
 
-    def send_timestamp_to_all_connections(self):
-        time = time.time()
-        for connection, _, _ in self.connections:
-            connection.send(f"TIME:{time}||".encode("utf-8"))
-
-
 if __name__=="__main__":
-    abes_ip = "217.105.109.132"
+    abes_ip = "84.25.27.86"
     laptop_abe_local_ip = "192.168.1.104"
     ivos_ip = "87.214.136.100"
     ivo_local = "192.168.1.124"
@@ -110,5 +105,5 @@ if __name__=="__main__":
     local_ip = "localhost"
     ip_uni = "145.97.151.17"
 
-    server = AuthoritativeServer(ivo_local, 25565)
+    server = AuthoritativeServer(abe_local, 25565)
     server.listen_for_connections()
