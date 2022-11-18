@@ -41,7 +41,7 @@ class Client:
                 game_states.append(GameState.from_json(json_state))
 
             # print(f"CLIENT: game state= {game_state}")
-            for game_state in reversed(game_states):
+            for game_state in game_states:
                 if game_state == None:
                     continue
                 self.game.set_gamestate(game_state)
