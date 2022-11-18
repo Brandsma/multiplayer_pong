@@ -273,12 +273,8 @@ class Pong:
         while True:
             self.draw(self.window)
 
-            for keydirection, event_key in self.handle_events:
-
-                if keydirection == "KEYDOWN":
-                    self.keydown(event_key)
-                elif keydirection == "KEYUP":
-                    self.keyup(event_key)
+            for key_direction, event_key in self.handle_events:
+                self.handle_event(key_direction, event_key)
                     
             self.handle_events = []
 
@@ -310,6 +306,11 @@ class Pong:
 
         return (keydirection, key)
 
+    def handle_event(self, key_direction, event_key):
+        if key_direction == "KEYDOWN":
+            self.keydown(event_key)
+        elif key_direction == "KEYUP":
+            self.keyup(event_key)
 
     def client_run(self, client):
         self.init()
@@ -326,8 +327,7 @@ class Pong:
                 stringified_event = self.stringify_event(event)
                 if stringified_event != None:
                     client.send_event(stringified_event)
-
-                # self.set_gamestate(client.get_gamestate())
+                    self.handle_event(stringified_event[0], stringified_event[1])
 
             pygame.display.update()
             fps.tick(60)
