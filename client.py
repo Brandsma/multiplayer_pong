@@ -27,6 +27,12 @@ class Client:
                 continue
 
             json_states = data.decode("utf-8").split("||")
+            if type(json_states) == str:
+                now = time.time()
+                print("received ping")
+                ping = now - float(json_states.removeprefix('TIME:'))
+                self.game.set_ping(ping)
+                continue
             game_states = []
             for json_state in json_states:
                 if json_state == "":
@@ -62,6 +68,8 @@ class Client:
 if __name__=="__main__":
     abe_local = "192.168.178.87"
     abe_public = "84.25.27.86"
+    ivos_ip = "87.214.136.100"
 
-    client = Client(abe_public, 25565)
+
+    client = Client(ivos_ip, 25565)
     client.keep_alive()

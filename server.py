@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from uuid import uuid4
 import threading
 from betterpong import Pong
-
+import time
 
 class Game:
     def __init__(self):
@@ -95,6 +95,10 @@ class AuthoritativeServer:
         for connection, _, _ in self.connections:
             connection.send(f"{self.game.get_gamestate().to_json()}||".encode("utf-8"))
 
+    def send_timestamp_to_all_connections(self):
+        time = time.time()
+        for connection, _, _ in self.connections:
+            connection.send(f"TIME:{time}||".encode("utf-8"))
 
 
 if __name__=="__main__":
@@ -106,5 +110,5 @@ if __name__=="__main__":
     local_ip = "localhost"
     ip_uni = "145.97.151.17"
 
-    server = AuthoritativeServer(abe_local, 25565)
+    server = AuthoritativeServer(ivo_local, 25565)
     server.listen_for_connections()

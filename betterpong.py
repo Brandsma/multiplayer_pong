@@ -17,6 +17,8 @@ pygame.init()
 fps = pygame.time.Clock()
 
 
+DEBUG = True
+
 WHITE = (255, 255, 255)
 ORANGE = (255, 140, 0)
 GREEN = (0, 255, 0)
@@ -97,6 +99,7 @@ class Pong:
         self.paddle2_vel = 0
         self.l_score = 0
         self.r_score = 0
+        self.ping = 0.0
 
         self.handle_events = []
 
@@ -227,6 +230,13 @@ class Pong:
         myfont2 = pygame.font.SysFont("Comic Sans MS", 20)
         label2 = myfont2.render("Score " + str(self.r_score), 1, (255, 255, 0))
         canvas.blit(label2, (470, 20))
+
+        if DEBUG:
+            ping = myfont2.render(f"Ping {self.ping}", 1, (255,255,0))
+            canvas.blit(ping, (270, 20))
+
+    def set_ping(self, ping):
+        self.ping = round(1000 * ping, 2)
 
 
     def keydown(self, event_key):
