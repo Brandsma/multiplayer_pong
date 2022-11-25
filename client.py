@@ -72,7 +72,11 @@ class Client:
                 self.game.set_gamestate(game_state)
 
                 # Set ping                
-                self.game.set_ping(now - game_state.cur_time)
+                self.game.set_ping(now - game_state.cur_time + delta_time)
+
+## Clock asynch time = (current_time - received_time) - travel time
+## travel_time = time delta a->b + time delta b->a / 2
+
 
     def keep_alive(self):
         print("keeping alive...")
