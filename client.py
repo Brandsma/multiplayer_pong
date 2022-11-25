@@ -22,9 +22,28 @@ class Client:
 
     def listen(self):
         print("Listening from client...")
+
+        # Send time to server
+        t0 = time.time()
+        t0_json = json_event = json.dumps(t0).encode("utf-8")
+        t0_json += b"||"
+        self.network.connection.send(t0_json)
+
+        # Get time from server
+        data = self.network.connection.recv(4096)    
+        print(f"time: {data=}")
+        times_received = data.split(b"||")
+        t1 = json.loads(times_received[0])
+        t2 = json.loads(times_received[1])
+        print(f"{t1=}")
+        print(f"{t2=}")
+        t3 = time.time()
+
+        delta_time = ((t1 - t0) + (t2-t3))/2
+
+        print(f"{delta_time=}")
+
         while True:
-
-
             data = self.network.connection.recv(4096)    
             time.sleep(ARTIFICIAL_PING)
             now = time.time()        
@@ -84,5 +103,5 @@ if __name__=="__main__":
     abe_local = "192.168.178.87"
 
 
-    client = Client(ivos_ip, 25565)
+    client = Client(abe_public, 25565)
     client.keep_alive()

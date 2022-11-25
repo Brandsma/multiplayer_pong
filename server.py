@@ -68,6 +68,26 @@ class AuthoritativeServer:
         # Send the player id to the client
         connection.send(player_id.encode("utf-8"))
 
+        # Get time from client
+        data = connection.recv(4096)
+        t1 = time.time()
+        print(f"time: {data=}")
+        time_received = data.split(b"||")
+        t0 = None
+        for times in time_received:
+            if times == b'':
+                continue
+            t0 = json.loads(times)
+        print(f"{t0=}")
+
+        # Send time to client
+        t2 = time.time()
+        t2_json = json.dumps(t1).encode("utf-8")
+        t2_json += b"||"
+        t2_json += json.dumps(t2).encode("utf-8")
+        t2_json += b"||"
+        connection.send(t2_json)
+
         while True:
             try:
 
@@ -112,5 +132,5 @@ if __name__=="__main__":
     local_ip = "localhost"
     ip_uni = "145.97.151.17"
 
-    server = AuthoritativeServer(ivo_local, 25565)
+    server = AuthoritativeServer(abe_local, 25565)
     server.listen_for_connections()
