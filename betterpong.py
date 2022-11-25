@@ -86,6 +86,7 @@ class GameState:
             "l_score" : self.l_score,
             "r_score" : self.r_score,
             "cur_time" : self.cur_time,
+            "sequence_number" : self.sequence_number,
         }
         json_state = json.dumps(state)
         return json_state
@@ -134,12 +135,13 @@ class Pong:
         self.cur_time = gamestate.cur_time
 
         # self.local_updates.pop(0)
-        local_update = self.local_updates[0]
-        while local_update[2] < gamestate.sequence_number:
-            local_update = self.local_updates.pop(0)
-            # Apply local update
-            self.handle_event(local_update[0], local_update[1])
-            fps.tick(6000)
+        if len(self.local_updates) != 0:
+            local_update = self.local_updates[0]
+            while local_update[2] < gamestate.sequence_number:
+                local_update = self.local_updates.pop(0)
+                # Apply local update
+                self.handle_event(local_update[0], local_update[1])
+                fps.tick(6000)
 
 
     def ball_init(self, right):
