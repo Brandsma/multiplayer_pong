@@ -4,7 +4,7 @@ import time
 from network_interface import Network
 from betterpong import Pong, GameState
 
-ARTIFICIAL_PING = 0 #seconds
+ARTIFICIAL_PING = 0.200 #seconds
 
 class Client:
 
