@@ -5,14 +5,14 @@ import pygame
 import json
 import sys
 from pygame import *
-from easygui import *
+# from easygui import *
 from dataclasses import dataclass
 import time as time_module
 
-image = "/usr/share/daylight/daylightstart/DayLightLogoSunSet.gif"
-msg = "                           Welcome to Daylight Pong \n\n\n Rules of Daylight Pong \n\n\n Player 1 \n\n Arrow up = UP \n Arrow down = DOWN\n\n Player 2 \n\n Z = UP \n S = Down"
-choices = ["OK"]
-buttonbox(msg, image=image, choices=choices)
+# image = "/usr/share/daylight/daylightstart/DayLightLogoSunSet.gif"
+# msg = "                           Welcome to Daylight Pong \n\n\n Rules of Daylight Pong \n\n\n Player 1 \n\n Arrow up = UP \n Arrow down = DOWN\n\n Player 2 \n\n Z = UP \n S = Down"
+# choices = ["OK"]
+# buttonbox(msg, image=image, choices=choices)
 
 pygame.init()
 fps = pygame.time.Clock()
@@ -279,7 +279,7 @@ class Pong:
             self.handle_events = []
 
             pygame.display.update()
-            fps.tick(30)
+            fps.tick(60)
 
             server.update_gamestate_for_all_connections()
 
@@ -332,7 +332,7 @@ class Pong:
                     self.handle_event(stringified_event[0], stringified_event[1])
 
             pygame.display.update()
-            fps.tick(30)
+            fps.tick(60)
 
 
 if __name__=="__main__":
