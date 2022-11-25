@@ -66,7 +66,7 @@ class GameState:
         # print(json_state)
         try:
             state = json.loads(json_state)
-            gameState = GameState(state["ball_pos"], state["ball_vel"], state["paddle1_pos"], state["paddle2_pos"], state["paddle1_vel"], state["paddle2_vel"], state["l_score"], state["r_score"], state["cur_time"])
+            gameState = GameState(state["ball_pos"], state["ball_vel"], state["paddle1_pos"], state["paddle2_pos"], state["paddle1_vel"], state["paddle2_vel"], state["l_score"], state["r_score"], state["cur_time"], state["sequence_number"])
             return gameState
         except Exception as e:
             # print("Exception occurred in GameState from_json")
