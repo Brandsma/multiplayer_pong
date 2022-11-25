@@ -59,6 +59,7 @@ class GameState:
     l_score: int
     r_score: int
     cur_time: float
+    sequence_number: int
 
     @classmethod
     def from_json(cls, json_state: str):
@@ -104,6 +105,11 @@ class Pong:
         self.cur_time = 0.0
         self.ping = 0.0
 
+        # Server Reconciliation
+        self.sequence_number = 0
+        self.local_updates = []
+
+        # Authoritative Server
         self.handle_events = []
 
         self.window = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
@@ -111,9 +117,12 @@ class Pong:
 
 
     def get_gamestate(self):
-        return GameState(self.ball_pos, self.ball_vel, self.paddle1_pos, self.paddle2_pos, self.paddle1_vel, self.paddle2_vel, self.l_score, self.r_score, time_module.time())
+        return GameState(self.ball_pos, self.ball_vel, self.paddle1_pos, self.paddle2_pos, self.paddle1_vel, self.paddle2_vel, self.l_score, self.r_score, time_module.time(), self.sequence_number)
 
     def set_gamestate(self, gamestate):
+        # TODO: Check local updates and current sequence number
+        difference_in_sequence_number = self.sequence_number - gamestate.sequence_number
+            
         self.ball_pos = gamestate.ball_pos
         self.ball_vel = gamestate.ball_vel
         self.paddle1_pos = gamestate.paddle1_pos
@@ -123,6 +132,14 @@ class Pong:
         self.l_score = gamestate.l_score
         self.r_score = gamestate.r_score
         self.cur_time = gamestate.cur_time
+
+        # self.local_updates.pop(0)
+        local_update = self.local_updates[0]
+        while local_update[2] < gamestate.sequence_number:
+            local_update = self.local_updates.pop(0)
+            # Apply local update
+            self.handle_event(local_update[0], local_update[1])
+            fps.tick(6000)
 
 
     def ball_init(self, right):
@@ -273,7 +290,7 @@ class Pong:
         while True:
             self.draw(self.window)
 
-            for key_direction, event_key in self.handle_events:
+            for key_direction, event_key, received_sequence_number in self.handle_events:
                 self.handle_event(key_direction, event_key)
                     
             self.handle_events = []
@@ -304,7 +321,8 @@ class Pong:
         else: 
             return None
 
-        return (keydirection, key)
+        self.sequence_number += 1
+        return (keydirection, key, self.sequence_number)
 
     def handle_event(self, key_direction, event_key):
         if key_direction == "KEYDOWN":
@@ -329,6 +347,7 @@ class Pong:
                     client.send_event(stringified_event)
 
                     # Client side prediction
+                    self.local_updates.append(stringified_event)
                     self.handle_event(stringified_event[0], stringified_event[1])
 
             pygame.display.update()
