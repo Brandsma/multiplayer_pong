@@ -39,8 +39,8 @@ class Client:
         print(f"{t2=}")
         t3 = time.time()
 
+        print(f"{type(t1) = } {type(t2) = } {type(t3) = } {type(t0) = }")
         delta_time = ((t1 - t0) + (t2 - t3))/2
-        print(f"{type(t1)} {type(t2)} {type(t3)} {type(t0)}")
         print(f"{delta_time=}")
 
         while True:
