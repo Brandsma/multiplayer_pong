@@ -25,7 +25,7 @@ class Client:
 
         # Send time to server
         t0 = time.time()
-        t0_json = json_event = json.dumps(t0).encode("utf-8")
+        t0_json = json.dumps(t0).encode("utf-8")
         t0_json += b"||"
         self.network.connection.send(t0_json)
 
@@ -39,8 +39,8 @@ class Client:
         print(f"{t2=}")
         t3 = time.time()
 
-        delta_time = ((t1 - t0) + (t2-t3))/2
-
+        delta_time = ((t1 - t0) + (t2 - t3))/2
+        print(f"{type(t1)} {type(t2)} {type(t3)} {type(t0)}")
         print(f"{delta_time=}")
 
         while True:
