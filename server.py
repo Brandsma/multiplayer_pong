@@ -6,6 +6,8 @@ import threading
 from betterpong import Pong
 import time
 
+from network_data import NetworkData, TimeUpdate
+
 class Game:
     def __init__(self):
         pass
@@ -70,29 +72,45 @@ class AuthoritativeServer:
 
         # Get time from client
         data = connection.recv(4096)
+        times_received = data.split(b"||")
         t1 = time.time()
         print(f"time: {data=}")
-        time_received = data.split(b"||")
-        t0 = None
-        for times in time_received:
-            if times == b'':
-                continue
-            t0 = json.loads(times)
-        print(f"{t0=}")
+        # t0 = NetworkData._from_packet(data)
+        # t0 = None
+        # for times in time_received:
+        #     if times == b'':
+        #         continue
+        #     t0 = json.loads(times)
+        # print(f"{t0=}")
+
+        # for time_received in times_received:
+        #     if time_received == b'':
+        #         continue
+        #     t2 = NetworkData._from_packet(data)
+        #     if type(t2) == TimeUpdate:
+        #         break
+        #     else:
+        #         t2 = None
 
         # Send time to client
+        # t2_json = json.dumps(t1).encode("utf-8")
+        # t2_json += b"||"
+        # t2_json += json.dumps(t2).encode("utf-8")
+        # t2_json += b"||"
+        # #time.sleep(0.2)
+        # connection.send(t2_json)
+
+
         t2 = time.time()
-        t2_json = json.dumps(t1).encode("utf-8")
-        t2_json += b"||"
-        t2_json += json.dumps(t2).encode("utf-8")
-        t2_json += b"||"
-        connection.send(t2_json)
+        connection.send(TimeUpdate(t1).to_packet())
+
+        connection.send(TimeUpdate(t2).to_packet())
 
         while True:
             try:
 
                 data = connection.recv(4096)
-                print(f"{data=}")
+                # print(f"{data=}")
                 # If nothing got sent, wait
                 if not data:
                     continue

@@ -1,6 +1,7 @@
 import threading
 import json
-import time 
+import time
+from network_data import NetworkData, TimeUpdate, GameStateUpdate
 from network_interface import Network
 from betterpong import Pong, GameState
 
@@ -25,22 +26,58 @@ class Client:
 
         # Send time to server
         t0 = time.time()
-        t0_json = json.dumps(t0).encode("utf-8")
-        t0_json += b"||"
-        self.network.connection.send(t0_json)
+        t0_packet = TimeUpdate(t0).to_packet()
+        #t0_json = json.dumps(t0).encode("utf-8")
+        #t0_json += b"||"
+        self.network.connection.send(t0_packet)
 
         # Get time from server
+        # TODO: receives the wrong input at this time
         data = self.network.connection.recv(4096)    
-        print(f"time: {data=}")
-        times_received = data.split(b"||")
-        t1 = json.loads(times_received[0])
-        t2 = json.loads(times_received[1])
+        print(f"t1: {data=}")
+        times_received = NetworkData.from_packets(data)
+        t1 = None
+        for time_received in times_received:
+            if type(time_received) == TimeUpdate:
+                t1 = time_received
+            elif type(time_received) == GameStateUpdate:
+                print("Received game state update instead of time update")
+                t1 = None
+            else:
+                t1 = None
+        # t1: TimeUpdate = NetworkData._from_packet(data)
+        # TODO: It breaks here because instead of the regular time update, it receives a game state
+
+        data = self.network.connection.recv(4096)    
+        print(f"t2 {data=}")
+        times_received = NetworkData.from_packets(data)
+        t2 = None
+        for time_received in times_received:
+            if type(time_received) == TimeUpdate:
+                t2 = time_received
+            else:
+                t2 = None
+        # times_received = data.split(b"||")
+        # t2: TimeUpdate = NetworkData.from_packets(data)
+        # for time_received in times_received:
+        #     if time_received == b'':
+        #         continue
+
+        #     print(f"{time_received=}")
+        #     t2 = NetworkData.from_packets(time_received)
+        #     if type(t2) == TimeUpdate:
+        #         break
+        #     else:
+        #         t2 = None
+
+        print(f"{type(t1)=}")
+        print(f"{type(t2)=}")
         print(f"{t1=}")
         print(f"{t2=}")
         t3 = time.time()
 
         print(f"{type(t1) = } {type(t2) = } {type(t3) = } {type(t0) = }")
-        delta_time = ((t1 - t0) + (t2 - t3))/2
+        delta_time = ((t1.time - t0) + (t2.time - t3))/2
         print(f"{delta_time=}")
 
         while True:
@@ -72,6 +109,7 @@ class Client:
                 self.game.set_gamestate(game_state)
 
                 # Set ping                
+                # print(f"Received game state at {now} with time {game_state.cur_time} and delta time {delta_time}")
                 self.game.set_ping(now - game_state.cur_time + delta_time)
 
 ## Clock asynch time = (current_time - received_time) - travel time
@@ -99,6 +137,7 @@ class Client:
     def disconnect(self):
         self.network.disconnect_client(self.player_id)
 
+
 if __name__=="__main__":
     abe_local = "192.168.178.87"
     abe_public = "84.25.27.86"
@@ -109,3 +148,4 @@ if __name__=="__main__":
 
     client = Client(abe_public, 25565)
     client.keep_alive()
+    

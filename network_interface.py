@@ -1,5 +1,6 @@
 import socket
 
+
 class Network:
     def __init__(self, server_ip="localhost", port=25565):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
