@@ -40,9 +40,10 @@ class NetworkGroup:
         timeout: float = 0.01,
         max_size: int = 4096,
         max_timeout: float = 1,
+        max_return_count: int = 0,
     ):
         return self.network_group[player_id].receive(
-            expected_type, blocking, timeout, max_size, max_timeout
+            expected_type, blocking, timeout, max_size, max_timeout, max_return_count
         )
 
 
@@ -68,6 +69,7 @@ class Network:
         timeout: float = 0.01,
         max_size: int = 4096,
         max_timeout: float = 1,
+        max_return_count: int = 0,
     ):
         # TODO: Add max recursion depth exception handling
 
@@ -78,26 +80,34 @@ class Network:
 
         parsed_packages = NetworkData.from_packets(received_data)
 
+        # If the data is the expected type or no expected type is given, return the data
+        if expected_type == None:
+            if len(parsed_packages) == 0:
+                return []
+            result = parsed_packages
+            return result
+
         for parsed_package in parsed_packages:
             # parse the data
             if type(parsed_package) not in self.network_data_buffer:
                 self.network_data_buffer[type(parsed_package)] = []
             self.network_data_buffer[type(parsed_package)].append(parsed_package)
 
-        # If the data is the expected type or no expected type is given, return the data
-        if expected_type == None:
-            if len(parsed_packages) == 0:
-                return None
-            result = parsed_packages[0]
-            self.network_data_buffer[type(result)].remove(result)
-            return result
-
         # If the expected data type data is in the buffer, return it. This also clears the buffer if no packages are revceived
         if (
             expected_type in self.network_data_buffer
             and len(self.network_data_buffer[expected_type]) != 0
         ):
-            return self.network_data_buffer[expected_type].pop(0)
+            if max_return_count == 0:
+                result = self.network_data_buffer[expected_type]
+                self.network_data_buffer[expected_type] = []
+            else:
+                result = self.network_data_buffer[expected_type][:max_return_count]
+                self.network_data_buffer[expected_type] = self.network_data_buffer[
+                    expected_type
+                ][max_return_count:]
+            return result
+
         # If blocking, wait for the expected type
         elif blocking:
             time.sleep(timeout)
@@ -106,9 +116,16 @@ class Network:
             if timeout > max_timeout:
                 print("Max timeout reached")
                 timeout = max_timeout
-            return self.receive(expected_type, blocking, timeout, max_size)
+            return self.receive(
+                expected_type=expected_type,
+                blocking=blocking,
+                timeout=timeout,
+                max_size=max_size,
+                max_timeout=max_timeout,
+                max_return_count=max_return_count,
+            )
         else:
-            return None
+            return []
 
     def send(self, data):
         self.connection.send(data.to_packet())

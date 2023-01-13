@@ -16,6 +16,7 @@ class AuthoritativeServer:
 
         self.bind_server(server_ip, port)
 
+        # TODO self.game becomes self.room, and a game in there. A room will also have a network group
         self.game = Pong(name="Server Pong", run_with_viewer=False)
         self.game_thread = threading.Thread(target=self.game.server_run, args=(self,))
 
@@ -45,9 +46,13 @@ class AuthoritativeServer:
             t.daemon = True
             t.start()
 
+    def init_client(self, player_id):
+        self.game.player_sequence_numbers[player_id] = 0
+
     def client_thread(self, connection, player_id):
         print(f"Started a thread for client {player_id}")
 
+        self.init_client(player_id)
         # Send the player id to the client
         self.network_group.send_to_player(player_id, PlayerInfo(player_id))
 
@@ -60,10 +65,10 @@ class AuthoritativeServer:
 
         while True:
             try:
-                player_input = self.network_group.receive_from_player(
+                player_inputs = self.network_group.receive_from_player(
                     player_id, PlayerInputEvent, blocking=False
                 )
-                if player_input != None:
+                for player_input in player_inputs:
                     self.game.add_player_input_to_events(player_input)
 
             except ConnectionResetError as e:
@@ -77,7 +82,10 @@ class AuthoritativeServer:
     def update_gamestate_for_all_connections(self):
         game_state = self.game.get_gamestate()
         game_state.cur_time = time.time()
-        self.network_group.send_to_all(game_state)
+
+        for player_id in self.network_group.network_group:
+            game_state.sequence_number = self.game.player_sequence_numbers[player_id]
+            self.network_group.send_to_player(player_id, game_state)
 
 
 if __name__ == "__main__":

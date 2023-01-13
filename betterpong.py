@@ -56,6 +56,7 @@ class Pong:
 
         # Server Reconciliation
         self.sequence_number = 0
+        self.player_sequence_numbers = {}
         self.local_updates = []
 
         # Authoritative Server
@@ -95,12 +96,25 @@ class Pong:
     def reapply_local_updates(self, sequence_number):
         # If we applied local updates, we need to reapply them
         if len(self.local_updates) != 0:
-            local_update = self.local_updates[0]
+            # print(f"local updates before remove: {len(self.local_updates)}")
+            # print(
+            #     f"sequences: first local {self.local_updates[0].sequence_number}, last local {self.local_updates[-1].sequence_number} server {sequence_number}"
+            # )
             # for all updates that have not been applied yet since the last gamestate update from the server
-            while local_update.sequence_number < sequence_number:
-                local_update = self.local_updates.pop(0)
+            while (
+                len(self.local_updates) != 0
+                and self.local_updates[0].sequence_number <= sequence_number
+            ):
+                self.local_updates.pop(0)
                 # Apply local update
-                self.handle_event(local_update.key_direction, local_update.key_value, "reconciliation")
+            # print(f"local updates after remove: {len(self.local_updates)}")
+            for local_update in self.local_updates:
+                # print(
+                #     f"reapply local update (server reconciliation) {sequence_number}, {len(self.local_updates)}"
+                # )
+                self.handle_event(
+                    local_update.key_direction, local_update.key_value, "reconciliation"
+                )
                 # Set fps to infinity so the updates are applied (near) instantly
                 fps.tick()
 
@@ -291,8 +305,12 @@ class Pong:
 
             for player_input_event in self.handle_events:
                 self.handle_event(
-                    player_input_event.key_direction, player_input_event.key_value, "server"
+                    player_input_event.key_direction,
+                    player_input_event.key_value,
+                    "server",
                 )
+
+                self.player_sequence_numbers[player_input_event.player_id] += 1
 
             self.handle_events = []
 
@@ -322,11 +340,12 @@ class Pong:
         self.init()
 
         while True:
+            self.update()
+
             if self.run_with_viewer:
                 self.draw(self.window)
 
             for event in pygame.event.get():
-                self.sequence_number += 1
 
                 if event.type == QUIT:
                     pygame.display.quit()
@@ -340,6 +359,7 @@ class Pong:
                         key_direction=event.type,
                         sequence_number=self.sequence_number,
                     )
+                    self.sequence_number += 1
 
                     client.send(player_input_event)
 

@@ -31,18 +31,14 @@ class Client:
 
         while True:
 
-            game_state = self.network.receive(GameState, blocking=False)
-            # time.sleep(ARTIFICIAL_PING)
+            game_states = self.network.receive(GameState, blocking=False)
+            time.sleep(ARTIFICIAL_PING)
             now = time.time()
 
-            if game_state == None:
-                continue
-
-            self.game.set_gamestate(game_state)
-
-            # Set ping
-            # print(f"Received game state at {now} with time {game_state.cur_time} and delta time {delta_time}")
-            self.game.set_ping(now - game_state.cur_time + delta_time)
+            for game_state in game_states:
+                self.game.set_gamestate(game_state)
+                # Set ping
+                self.game.set_ping(now - game_state.cur_time + delta_time)
 
     def get_server_time_delta(self):
         ## Clock asynch time = (current_time - received_time) - travel time
@@ -51,7 +47,7 @@ class Client:
         t0 = time.time()
         self.network.send(TimeUpdate(t0))
         # Get time from server
-        t1 = self.network.receive(TimeUpdate, blocking=True)
+        t1 = self.network.receive(TimeUpdate, blocking=True, max_return_count=1)[0]
         t2 = time.time()
         delta_time = ((t1.time - t0) + (t1.time - t2)) / 2
 
@@ -73,8 +69,8 @@ class Client:
     def get_connection_info(self):
         connection_info = {}
         connection_info["player_data"] = self.network.receive(
-            expected_type=PlayerInfo, blocking=True
-        )
+            expected_type=PlayerInfo, blocking=True, max_return_count=1
+        )[0]
         # NOTE Add more connection info here
         print(
             f"Connected to server with player id: {connection_info['player_data'].player_id}"
