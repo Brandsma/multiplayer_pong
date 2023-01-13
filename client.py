@@ -142,10 +142,11 @@ if __name__=="__main__":
     abe_local = "192.168.178.87"
     abe_public = "84.25.27.86"
     ivos_ip = "82.73.173.174"
+    ivos_local = "192.168.178.102"
     local = "localhost"
     abe_local = "192.168.178.87"
 
 
-    client = Client(abe_public, 25565)
+    client = Client(ivos_local, 25565)
     client.keep_alive()
     

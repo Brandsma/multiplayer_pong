@@ -33,7 +33,7 @@ class AuthoritativeServer:
 
         self.bind_server((self.ip, self.port))
 
-        self.game = Pong(name = "Server Pong")
+        self.game = Pong(name = "Server Pong", run_with_viewer = False)
         self.game_thread = threading.Thread(target= self.game.server_run, args=(self, ))
         
         
@@ -150,5 +150,5 @@ if __name__=="__main__":
     local_ip = "localhost"
     ip_uni = "145.97.151.17"
 
-    server = AuthoritativeServer(abe_local, 25565)
+    server = AuthoritativeServer(ivo_local, 25565)
     server.listen_for_connections()

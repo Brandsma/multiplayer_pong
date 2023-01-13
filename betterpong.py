@@ -93,7 +93,9 @@ class GameState:
 
 class Pong:
 
-    def __init__(self, name = "Daylight pong"):
+    def __init__(self, name = "Daylight pong", run_with_viewer = True):
+
+        self.run_with_viewer = run_with_viewer
 
         self.ball_pos = [0, 0]
         self.ball_vel = [0, 0]
@@ -169,17 +171,13 @@ class Pong:
             self.ball_init(False)
 
 
-    def draw(self, canvas):
-        # global self.paddle1_pos, self.paddle2_pos, self.ball_pos, self.ball_vel, self.l_score, self.r_score
+    def update(self):
+        self.move_paddles()
+        self.move_ball()
+        self.ball_bounce_or_score()
 
-        canvas.fill(BLACK)
-        pygame.draw.line(canvas, WHITE, [WIDTH // 2, 0], [WIDTH // 2, HEIGHT], 1)
-        pygame.draw.line(canvas, WHITE, [PAD_WIDTH, 0], [PAD_WIDTH, HEIGHT], 1)
-        pygame.draw.line(
-            canvas, WHITE, [WIDTH - PAD_WIDTH, 0], [WIDTH - PAD_WIDTH, HEIGHT], 1
-        )
-        pygame.draw.circle(canvas, WHITE, [WIDTH // 2, HEIGHT // 2], 70, 1)
 
+    def move_paddles(self):
         if self.paddle1_pos[1] > HALF_PAD_HEIGHT and self.paddle1_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
             self.paddle1_pos[1] += self.paddle1_vel
         elif self.paddle1_pos[1] == HALF_PAD_HEIGHT and self.paddle1_vel > 0:
@@ -194,10 +192,23 @@ class Pong:
         elif self.paddle2_pos[1] == HEIGHT - HALF_PAD_HEIGHT and self.paddle2_vel < 0:
             self.paddle2_pos[1] += self.paddle2_vel
 
+    def move_ball(self):
         self.ball_pos[0] += int(self.ball_vel[0])
         self.ball_pos[1] += int(self.ball_vel[1])
 
+    def draw_background(self, canvas):
+        canvas.fill(BLACK)
+        pygame.draw.line(canvas, WHITE, [WIDTH // 2, 0], [WIDTH // 2, HEIGHT], 1)
+        pygame.draw.line(canvas, WHITE, [PAD_WIDTH, 0], [PAD_WIDTH, HEIGHT], 1)
+        pygame.draw.line(
+            canvas, WHITE, [WIDTH - PAD_WIDTH, 0], [WIDTH - PAD_WIDTH, HEIGHT], 1
+        )
+        pygame.draw.circle(canvas, WHITE, [WIDTH // 2, HEIGHT // 2], 70, 1)
+
+    def draw_ball(self, canvas):
         pygame.draw.circle(canvas, ORANGE, self.ball_pos, 20, 0)
+
+    def draw_paddles(self, canvas):
         pygame.draw.polygon(
             canvas,
             GREEN,
@@ -221,6 +232,7 @@ class Pong:
             0,
         )
 
+    def ball_bounce_or_score(self):
         if int(self.ball_pos[1]) <= BALL_RADIUS:
             self.ball_vel[1] = -self.ball_vel[1]
         if int(self.ball_pos[1]) >= HEIGHT + 1 - BALL_RADIUS:
@@ -234,6 +246,7 @@ class Pong:
             self.ball_vel[1] *= 1.1
         elif int(self.ball_pos[0]) <= BALL_RADIUS + PAD_WIDTH:
             self.r_score += 1
+            print(f"Right player scores! R: {self.r_score} L: {self.l_score}")
             self.ball_init(True)
 
         if int(self.ball_pos[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(
@@ -244,8 +257,10 @@ class Pong:
             self.ball_vel[1] *= 1.1
         elif int(self.ball_pos[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH:
             self.l_score += 1
+            print(f"Left player scores! R: {self.r_score} L: {self.l_score}")
             self.ball_init(False)
 
+    def draw_score(self, canvas):
         myfont1 = pygame.font.SysFont("Comic Sans MS", 20)
         label1 = myfont1.render("Score " + str(self.l_score), 1, (255, 255, 0))
         canvas.blit(label1, (50, 20))
@@ -257,6 +272,15 @@ class Pong:
         if DEBUG:
             ping = myfont2.render(f"Ping {self.ping}", 1, (255,255,0))
             canvas.blit(ping, (310, 20))
+
+
+    def draw(self, canvas):
+        # global self.paddle1_pos, self.paddle2_pos, self.ball_pos, self.ball_vel, self.l_score, self.r_score
+
+        self.draw_background(canvas)
+        self.draw_ball(canvas)
+        self.draw_paddles(canvas)
+        self.draw_score(canvas)
 
     def set_ping(self, ping):
         self.ping = int(1000 * ping)
@@ -290,7 +314,10 @@ class Pong:
         self.init()
 
         while True:
-            self.draw(self.window)
+            self.update()
+
+            if self.run_with_viewer:
+                self.draw(self.window)
 
             for key_direction, event_key, received_sequence_number in self.handle_events:
                 self.handle_event(key_direction, event_key)
