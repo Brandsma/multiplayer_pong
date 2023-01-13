@@ -100,7 +100,7 @@ class Pong:
             while local_update.sequence_number < sequence_number:
                 local_update = self.local_updates.pop(0)
                 # Apply local update
-                self.handle_event(local_update.key_direction, local_update.key_value)
+                self.handle_event(local_update.key_direction, local_update.key_value, "reconciliation")
                 # Set fps to infinity so the updates are applied (near) instantly
                 fps.tick()
 
@@ -291,7 +291,7 @@ class Pong:
 
             for player_input_event in self.handle_events:
                 self.handle_event(
-                    player_input_event.key_direction, player_input_event.key_value
+                    player_input_event.key_direction, player_input_event.key_value, "server"
                 )
 
             self.handle_events = []
@@ -301,7 +301,8 @@ class Pong:
 
             server.update_gamestate_for_all_connections()
 
-    def handle_event(self, key_direction, event_key):
+    def handle_event(self, key_direction, event_key, origin=None):
+        print(f"handling event now from {origin}")
         if key_direction == KEYDOWN:
             if event_key == K_UP:
                 self.paddle2_vel = -8
@@ -344,7 +345,7 @@ class Pong:
 
                     # Client side prediction
                     self.local_updates.append(player_input_event)
-                    self.handle_event(event.type, event.key)
+                    self.handle_event(event.type, event.key, "local")
 
             pygame.display.update()
             fps.tick(60)
