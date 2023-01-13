@@ -1,9 +1,9 @@
 import threading
 import json
 import time
-from network_data import NetworkData, TimeUpdate, GameStateUpdate
+from network_data import NetworkData, TimeUpdate, GameStateUpdate, GameState
 from network_interface import Network
-from betterpong import Pong, GameState
+from betterpong import Pong
 
 ARTIFICIAL_PING = 0.200 #seconds
 
@@ -99,7 +99,7 @@ class Client:
             for json_state in json_states:
                 if json_state == "":
                     continue
-                game_states.append(GameState.from_json(json_state))
+                game_states.append(NetworkData.from_json(json_state))
 
             # print(f"CLIENT: game state= {game_state}")
             for game_state in game_states:

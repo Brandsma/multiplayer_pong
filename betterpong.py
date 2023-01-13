@@ -8,6 +8,7 @@ from pygame import *
 # from easygui import *
 from dataclasses import dataclass
 import time as time_module
+from network_data import GameState
 
 # image = "/usr/share/daylight/daylightstart/DayLightLogoSunSet.gif"
 # msg = "                           Welcome to Daylight Pong \n\n\n Rules of Daylight Pong \n\n\n Player 1 \n\n Arrow up = UP \n Arrow down = DOWN\n\n Player 2 \n\n Z = UP \n S = Down"
@@ -47,49 +48,6 @@ inverse_event_translation = {
     "K_s" : K_s,
 }
 
-
-@dataclass
-class GameState:
-    ball_pos: list
-    ball_vel: list
-    paddle1_pos: float
-    paddle2_pos: float
-    paddle1_vel: float
-    paddle2_vel: float
-    l_score: int
-    r_score: int
-    cur_time: float
-    sequence_number: int
-
-    @classmethod
-    def from_json(cls, json_state: str):
-        # print(json_state)
-        try:
-            state = json.loads(json_state)
-            gameState = GameState(state["ball_pos"], state["ball_vel"], state["paddle1_pos"], state["paddle2_pos"], state["paddle1_vel"], state["paddle2_vel"], state["l_score"], state["r_score"], state["cur_time"], state["sequence_number"])
-            return gameState
-        except Exception as e:
-            # print("Exception occurred in GameState from_json")
-            print("\n\n")
-            print(json_state)
-            print(e)
-            return None
-
-    def to_json(self):
-        state = {
-            "ball_pos" : self.ball_pos,
-            "ball_vel" : self.ball_vel,
-            "paddle1_pos" : self.paddle1_pos,
-            "paddle2_pos" : self.paddle2_pos,
-            "paddle1_vel" : self.paddle1_vel,
-            "paddle2_vel" : self.paddle2_vel,
-            "l_score" : self.l_score,
-            "r_score" : self.r_score,
-            "cur_time" : self.cur_time,
-            "sequence_number" : self.sequence_number,
-        }
-        json_state = json.dumps(state)
-        return json_state
 
 class Pong:
 
