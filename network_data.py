@@ -4,6 +4,8 @@ import dacite
 
 
 class NetworkData:
+    incomplete_message = None
+
     def to_json(self):
         """Return JSON object of this data object, used when sending data."""
         jsonified_send_object = asdict(self)
@@ -14,7 +16,7 @@ class NetworkData:
     @classmethod
     def from_json(cls, json_string, type_def=None):
         """Return data object of input JSON object, used when receiving data."""
-        # print(json_string)
+        # print(f"from_json: {json_string=}")
         data = json.loads(json_string)
         if type_def is None:
             type_def = cls.deduce_class_type(data["class_type"])
@@ -42,6 +44,8 @@ class NetworkData:
     @classmethod
     def from_packets(cls, packets, type_def=None):
         """Decode data object from received packets, first decoding from binary, then to data object from JSON"""
+        if packets == None:
+            return []
         packets = packets.split(b"||")
         packets = [packet for packet in packets if packet != b""]
         return [cls._from_packet(packet, type_def=type_def) for packet in packets]
@@ -50,6 +54,9 @@ class NetworkData:
     def deduce_class_type(cls, type_name):
         """When recieving a bytes object and translating it back to NetworkData object,
         we need to know what subtype of NetworkData we need to translate it to."""
+        assert type(cls) == type(
+            NetworkData
+        ), "deduce_class_type should only be called on NetworkData class"
 
         return [
             subclass
@@ -81,4 +88,17 @@ class GameState(NetworkData):
     l_score: int
     r_score: int
     cur_time: float
+    sequence_number: int
+
+
+@dataclass
+class PlayerInfo(NetworkData):
+    player_id: str
+
+
+@dataclass
+class PlayerInputEvent(NetworkData):
+    player_id: str
+    key_value: int
+    key_direction: int
     sequence_number: int

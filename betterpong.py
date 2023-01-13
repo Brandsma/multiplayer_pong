@@ -2,13 +2,14 @@
 
 import random
 import pygame
-import json
 import sys
 from pygame import *
+
 # from easygui import *
 from dataclasses import dataclass
 import time as time_module
-from network_data import GameState
+from network_data import GameState, PlayerInputEvent
+
 
 # image = "/usr/share/daylight/daylightstart/DayLightLogoSunSet.gif"
 # msg = "                           Welcome to Daylight Pong \n\n\n Rules of Daylight Pong \n\n\n Player 1 \n\n Arrow up = UP \n Arrow down = DOWN\n\n Player 2 \n\n Z = UP \n S = Down"
@@ -18,6 +19,8 @@ from network_data import GameState
 pygame.init()
 fps = pygame.time.Clock()
 
+
+FRAME_RATE = 60
 
 DEBUG = True
 
@@ -34,24 +37,9 @@ PAD_HEIGHT = 80
 HALF_PAD_WIDTH = PAD_WIDTH // 2
 HALF_PAD_HEIGHT = PAD_HEIGHT // 2
 
-event_translation = {
-    K_UP: "K_UP",
-    K_DOWN: "K_DOWN",
-    K_z: "K_z",
-    K_s: "K_s",
-}
-
-inverse_event_translation = {
-    "K_UP": K_UP,
-    "K_DOWN": K_DOWN,
-    "K_z" : K_z,
-    "K_s" : K_s,
-}
-
 
 class Pong:
-
-    def __init__(self, name = "Daylight pong", run_with_viewer = True):
+    def __init__(self, name="Daylight pong", run_with_viewer=True):
 
         self.run_with_viewer = run_with_viewer
 
@@ -76,14 +64,22 @@ class Pong:
         self.window = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
         pygame.display.set_caption(name)
 
-
     def get_gamestate(self):
-        return GameState(self.ball_pos, self.ball_vel, self.paddle1_pos, self.paddle2_pos, self.paddle1_vel, self.paddle2_vel, self.l_score, self.r_score, time_module.time(), self.sequence_number)
+        return GameState(
+            self.ball_pos,
+            self.ball_vel,
+            self.paddle1_pos,
+            self.paddle2_pos,
+            self.paddle1_vel,
+            self.paddle2_vel,
+            self.l_score,
+            self.r_score,
+            time_module.time(),
+            self.sequence_number,
+        )
 
     def set_gamestate(self, gamestate):
-        # TODO: Check local updates and current sequence number
-        difference_in_sequence_number = self.sequence_number - gamestate.sequence_number
-            
+
         self.ball_pos = gamestate.ball_pos
         self.ball_vel = gamestate.ball_vel
         self.paddle1_pos = gamestate.paddle1_pos
@@ -94,15 +90,19 @@ class Pong:
         self.r_score = gamestate.r_score
         self.cur_time = gamestate.cur_time
 
-        # self.local_updates.pop(0)
+        self.reapply_local_updates(gamestate.sequence_number)
+
+    def reapply_local_updates(self, sequence_number):
+        # If we applied local updates, we need to reapply them
         if len(self.local_updates) != 0:
             local_update = self.local_updates[0]
-            while local_update[2] < gamestate.sequence_number:
+            # for all updates that have not been applied yet since the last gamestate update from the server
+            while local_update.sequence_number < sequence_number:
                 local_update = self.local_updates.pop(0)
                 # Apply local update
-                self.handle_event(local_update[0], local_update[1])
-                fps.tick(6000)
-
+                self.handle_event(local_update.key_direction, local_update.key_value)
+                # Set fps to infinity so the updates are applied (near) instantly
+                fps.tick()
 
     def ball_init(self, right):
         # global self.ball_pos, self.ball_vel
@@ -114,7 +114,6 @@ class Pong:
             horz = -horz
 
         self.ball_vel = [horz, -vert]
-
 
     def init(self):
         # global self.paddle1_pos, self.paddle2_pos, self.paddle1_vel, self.paddle2_vel, self.l_score, self.r_score  # these are floats
@@ -128,22 +127,26 @@ class Pong:
         else:
             self.ball_init(False)
 
-
     def update(self):
         self.move_paddles()
         self.move_ball()
         self.ball_bounce_or_score()
 
-
     def move_paddles(self):
-        if self.paddle1_pos[1] > HALF_PAD_HEIGHT and self.paddle1_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
+        if (
+            self.paddle1_pos[1] > HALF_PAD_HEIGHT
+            and self.paddle1_pos[1] < HEIGHT - HALF_PAD_HEIGHT
+        ):
             self.paddle1_pos[1] += self.paddle1_vel
         elif self.paddle1_pos[1] == HALF_PAD_HEIGHT and self.paddle1_vel > 0:
             self.paddle1_pos[1] += self.paddle1_vel
         elif self.paddle1_pos[1] == HEIGHT - HALF_PAD_HEIGHT and self.paddle1_vel < 0:
             self.paddle1_pos[1] += self.paddle1_vel
 
-        if self.paddle2_pos[1] > HALF_PAD_HEIGHT and self.paddle2_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
+        if (
+            self.paddle2_pos[1] > HALF_PAD_HEIGHT
+            and self.paddle2_pos[1] < HEIGHT - HALF_PAD_HEIGHT
+        ):
             self.paddle2_pos[1] += self.paddle2_vel
         elif self.paddle2_pos[1] == HALF_PAD_HEIGHT and self.paddle2_vel > 0:
             self.paddle2_pos[1] += self.paddle2_vel
@@ -171,10 +174,22 @@ class Pong:
             canvas,
             GREEN,
             [
-                [self.paddle1_pos[0] - HALF_PAD_WIDTH, self.paddle1_pos[1] - HALF_PAD_HEIGHT],
-                [self.paddle1_pos[0] - HALF_PAD_WIDTH, self.paddle1_pos[1] + HALF_PAD_HEIGHT],
-                [self.paddle1_pos[0] + HALF_PAD_WIDTH, self.paddle1_pos[1] + HALF_PAD_HEIGHT],
-                [self.paddle1_pos[0] + HALF_PAD_WIDTH, self.paddle1_pos[1] - HALF_PAD_HEIGHT],
+                [
+                    self.paddle1_pos[0] - HALF_PAD_WIDTH,
+                    self.paddle1_pos[1] - HALF_PAD_HEIGHT,
+                ],
+                [
+                    self.paddle1_pos[0] - HALF_PAD_WIDTH,
+                    self.paddle1_pos[1] + HALF_PAD_HEIGHT,
+                ],
+                [
+                    self.paddle1_pos[0] + HALF_PAD_WIDTH,
+                    self.paddle1_pos[1] + HALF_PAD_HEIGHT,
+                ],
+                [
+                    self.paddle1_pos[0] + HALF_PAD_WIDTH,
+                    self.paddle1_pos[1] - HALF_PAD_HEIGHT,
+                ],
             ],
             0,
         )
@@ -182,10 +197,22 @@ class Pong:
             canvas,
             GREEN,
             [
-                [self.paddle2_pos[0] - HALF_PAD_WIDTH, self.paddle2_pos[1] - HALF_PAD_HEIGHT],
-                [self.paddle2_pos[0] - HALF_PAD_WIDTH, self.paddle2_pos[1] + HALF_PAD_HEIGHT],
-                [self.paddle2_pos[0] + HALF_PAD_WIDTH, self.paddle2_pos[1] + HALF_PAD_HEIGHT],
-                [self.paddle2_pos[0] + HALF_PAD_WIDTH, self.paddle2_pos[1] - HALF_PAD_HEIGHT],
+                [
+                    self.paddle2_pos[0] - HALF_PAD_WIDTH,
+                    self.paddle2_pos[1] - HALF_PAD_HEIGHT,
+                ],
+                [
+                    self.paddle2_pos[0] - HALF_PAD_WIDTH,
+                    self.paddle2_pos[1] + HALF_PAD_HEIGHT,
+                ],
+                [
+                    self.paddle2_pos[0] + HALF_PAD_WIDTH,
+                    self.paddle2_pos[1] + HALF_PAD_HEIGHT,
+                ],
+                [
+                    self.paddle2_pos[0] + HALF_PAD_WIDTH,
+                    self.paddle2_pos[1] - HALF_PAD_HEIGHT,
+                ],
             ],
             0,
         )
@@ -196,8 +223,12 @@ class Pong:
         if int(self.ball_pos[1]) >= HEIGHT + 1 - BALL_RADIUS:
             self.ball_vel[1] = -self.ball_vel[1]
 
-        if int(self.ball_pos[0]) <= BALL_RADIUS + PAD_WIDTH and int(self.ball_pos[1]) in range(
-            self.paddle1_pos[1] - HALF_PAD_HEIGHT, self.paddle1_pos[1] + HALF_PAD_HEIGHT, 1
+        if int(self.ball_pos[0]) <= BALL_RADIUS + PAD_WIDTH and int(
+            self.ball_pos[1]
+        ) in range(
+            self.paddle1_pos[1] - HALF_PAD_HEIGHT,
+            self.paddle1_pos[1] + HALF_PAD_HEIGHT,
+            1,
         ):
             self.ball_vel[0] = -self.ball_vel[0]
             self.ball_vel[0] *= 1.1
@@ -209,7 +240,11 @@ class Pong:
 
         if int(self.ball_pos[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(
             self.ball_pos[1]
-        ) in range(self.paddle2_pos[1] - HALF_PAD_HEIGHT, self.paddle2_pos[1] + HALF_PAD_HEIGHT, 1):
+        ) in range(
+            self.paddle2_pos[1] - HALF_PAD_HEIGHT,
+            self.paddle2_pos[1] + HALF_PAD_HEIGHT,
+            1,
+        ):
             self.ball_vel[0] = -self.ball_vel[0]
             self.ball_vel[0] *= 1.1
             self.ball_vel[1] *= 1.1
@@ -228,9 +263,8 @@ class Pong:
         canvas.blit(label2, (470, 20))
 
         if DEBUG:
-            ping = myfont2.render(f"Ping {self.ping}", 1, (255,255,0))
+            ping = myfont2.render(f"Ping {self.ping}", 1, (255, 255, 0))
             canvas.blit(ping, (310, 20))
-
 
     def draw(self, canvas):
         # global self.paddle1_pos, self.paddle2_pos, self.ball_pos, self.ball_vel, self.l_score, self.r_score
@@ -242,28 +276,6 @@ class Pong:
 
     def set_ping(self, ping):
         self.ping = int(1000 * ping)
-
-
-    def keydown(self, event_key):
-        # global self.paddle1_vel, self.paddle2_vel
-
-        if event_key == "K_UP":
-            self.paddle2_vel = -8
-        elif event_key == "K_DOWN":
-            self.paddle2_vel = 8
-        elif event_key == "K_z":
-            self.paddle1_vel = 8
-        elif event_key == "K_s":
-            self.paddle1_vel = -8
-
-
-    def keyup(self, event_key):
-        # global self.paddle1_vel, self.paddle2_vel
-
-        if event_key in ("K_z", "K_s"):
-            self.paddle1_vel = 0
-        elif event_key in ("K_UP", "K_DOWN"):
-            self.paddle2_vel = 0
 
     def add_player_input_to_events(self, player_input_event):
         self.handle_events.append(player_input_event)
@@ -277,9 +289,11 @@ class Pong:
             if self.run_with_viewer:
                 self.draw(self.window)
 
-            for key_direction, event_key, received_sequence_number in self.handle_events:
-                self.handle_event(key_direction, event_key)
-                    
+            for player_input_event in self.handle_events:
+                self.handle_event(
+                    player_input_event.key_direction, player_input_event.key_value
+                )
+
             self.handle_events = []
 
             pygame.display.update()
@@ -287,60 +301,55 @@ class Pong:
 
             server.update_gamestate_for_all_connections()
 
-    def stringify_event(self, event):
-        keydirection = ""
-        key = ""
-        if event.type == KEYDOWN:
-            keydirection = "KEYDOWN"
-        elif event.type == KEYUP:
-            keydirection = "KEYUP"
-        else: 
-            return None
-
-        if event.key == K_UP:
-            key = "K_UP"
-        elif event.key == K_DOWN:
-            key = "K_DOWN"
-        elif event.key == K_z:
-            key = "K_z"
-        elif event.key == K_s:
-            key = "K_s"
-        else: 
-            return None
-
-        self.sequence_number += 1
-        return (keydirection, key, self.sequence_number)
-
     def handle_event(self, key_direction, event_key):
-        if key_direction == "KEYDOWN":
-            self.keydown(event_key)
-        elif key_direction == "KEYUP":
-            self.keyup(event_key)
+        if key_direction == KEYDOWN:
+            if event_key == K_UP:
+                self.paddle2_vel = -8
+            elif event_key == K_DOWN:
+                self.paddle2_vel = 8
+            elif event_key == K_z:
+                self.paddle1_vel = 8
+            elif event_key == K_s:
+                self.paddle1_vel = -8
+        elif key_direction == KEYUP:
+            if event_key in (K_z, K_s):
+                self.paddle1_vel = 0
+            elif event_key in (K_UP, K_DOWN):
+                self.paddle2_vel = 0
 
     def client_run(self, client):
         self.init()
 
         while True:
-            self.draw(self.window)
+            if self.run_with_viewer:
+                self.draw(self.window)
 
             for event in pygame.event.get():
+                self.sequence_number += 1
+
                 if event.type == QUIT:
                     pygame.display.quit()
                     pygame.quit()
                     sys.exit()
 
-                stringified_event = self.stringify_event(event)
-                if stringified_event != None:
-                    client.send_event(stringified_event)
+                if event.type == KEYDOWN or event.type == KEYUP:
+                    player_input_event = PlayerInputEvent(
+                        player_id=client.connection_info["player_data"].player_id,
+                        key_value=event.key,
+                        key_direction=event.type,
+                        sequence_number=self.sequence_number,
+                    )
+
+                    client.send(player_input_event)
 
                     # Client side prediction
-                    self.local_updates.append(stringified_event)
-                    self.handle_event(stringified_event[0], stringified_event[1])
+                    self.local_updates.append(player_input_event)
+                    self.handle_event(event.type, event.key)
 
             pygame.display.update()
             fps.tick(60)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     pong = Pong()
     pong.run()
