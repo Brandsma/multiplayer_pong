@@ -5,7 +5,7 @@ from network_interface import Network
 from betterpong import Pong
 import socket
 
-ARTIFICIAL_PING = 0.200  # seconds
+ARTIFICIAL_PING = 0.0500  # seconds
 
 
 class Client:

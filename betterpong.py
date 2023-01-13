@@ -112,9 +112,7 @@ class Pong:
                 # print(
                 #     f"reapply local update (server reconciliation) {sequence_number}, {len(self.local_updates)}"
                 # )
-                self.handle_event(
-                    local_update.key_direction, local_update.key_value, "reconciliation"
-                )
+                self.handle_event(local_update.key_direction, local_update.key_value)
                 # Set fps to infinity so the updates are applied (near) instantly
                 fps.tick()
 
@@ -305,9 +303,7 @@ class Pong:
 
             for player_input_event in self.handle_events:
                 self.handle_event(
-                    player_input_event.key_direction,
-                    player_input_event.key_value,
-                    "server",
+                    player_input_event.key_direction, player_input_event.key_value
                 )
 
                 self.player_sequence_numbers[player_input_event.player_id] += 1
@@ -316,11 +312,9 @@ class Pong:
 
             pygame.display.update()
             fps.tick(60)
-
             server.update_gamestate_for_all_connections()
 
-    def handle_event(self, key_direction, event_key, origin=None):
-        print(f"handling event now from {origin}")
+    def handle_event(self, key_direction, event_key):
         if key_direction == KEYDOWN:
             if event_key == K_UP:
                 self.paddle2_vel = -8
@@ -365,7 +359,9 @@ class Pong:
 
                     # Client side prediction
                     self.local_updates.append(player_input_event)
-                    self.handle_event(event.type, event.key, "local")
+                    # NOTE for reimplementation in snake, local updates should be a 'weaker' version than the server / reconciliation updates.
+                    # e.g. dont show that the snake is dead yet, even if it booped into a wall/tail. Only show it when the server confirms it.
+                    self.handle_event(event.type, event.key)
 
             pygame.display.update()
             fps.tick(60)
