@@ -5,7 +5,7 @@ from network_interface import Network
 from betterpong import Pong
 import socket
 
-ARTIFICIAL_PING = 0.0500  # seconds
+ARTIFICIAL_PING = 0.0000  # seconds
 
 
 class Client:
@@ -83,11 +83,12 @@ class Client:
 
 if __name__ == "__main__":
     abe_local = "192.168.178.87"
+    abe_local_linux = "192.168.178.199"
     abe_public = "84.25.27.86"
     ivos_ip = "82.73.173.174"
     ivos_local = "192.168.178.102"
     local = "localhost"
     abe_local = "192.168.178.87"
 
-    client = Client(ivos_local, 25565)
+    client = Client(abe_local_linux, 25565)
     client.keep_alive()

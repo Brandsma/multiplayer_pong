@@ -94,8 +94,9 @@ if __name__ == "__main__":
     ivos_ip = "82.73.173.174"
     ivo_local = "192.168.178.102"
     abe_local = "192.168.178.87"
+    abe_local_linux = "192.168.178.199"
     local_ip = "localhost"
     ip_uni = "145.97.151.17"
 
-    server = AuthoritativeServer(ivo_local, 25565)
+    server = AuthoritativeServer(abe_local_linux, 25565)
     server.listen_for_connections()
