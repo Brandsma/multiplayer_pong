@@ -312,7 +312,8 @@ class Pong:
 
             pygame.display.update()
             fps.tick(60)
-            server.update_gamestate_for_all_connections()
+
+            server.send_gamestate_to_all_connections()
 
     def handle_event(self, key_direction, event_key):
         if key_direction == KEYDOWN:

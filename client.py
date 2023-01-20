@@ -90,5 +90,5 @@ if __name__ == "__main__":
     local = "localhost"
     abe_local = "192.168.178.87"
 
-    client = Client(abe_local_linux, 25565)
+    client = Client(abe_public, 25565)
     client.keep_alive()
