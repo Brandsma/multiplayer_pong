@@ -14,7 +14,8 @@ class AuthoritativeServer:
     def __init__(self, server_ip, port):
         self.network_group = NetworkGroup(server_ip, port)
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+        self.update_time_step = 0.1  # seconds
+        self.last_update_time = time.time()
         self.bind_server(server_ip, port)
 
         # TODO self.game becomes self.room, and a game in there. A room will also have a network group
@@ -79,6 +80,12 @@ class AuthoritativeServer:
             except Exception as e:
                 print(f"Client thread encountered exception: {e}\n")
                 break
+
+    def send_gamestate_to_all_connections(self):
+        current_time = time.time()
+        if current_time - server.last_update_time >= server.update_time_step:
+            server.update_gamestate_for_all_connections()
+            server.last_update_time = current_time
 
     def update_gamestate_for_all_connections(self):
         game_state = self.game.get_gamestate()
