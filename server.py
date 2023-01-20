@@ -1,6 +1,7 @@
 import socket
 from dataclasses import dataclass
 from uuid import uuid4
+import sys
 import threading
 from betterpong import Pong
 import time
@@ -82,6 +83,8 @@ class AuthoritativeServer:
     def update_gamestate_for_all_connections(self):
         game_state = self.game.get_gamestate()
         game_state.cur_time = time.time()
+
+        # print("Sending packet of size", sys.getsizeof(game_state.to_packet()), "bytes to client")
 
         for player_id in self.network_group.network_group:
             game_state.sequence_number = self.game.player_sequence_numbers[player_id]
